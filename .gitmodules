@@ -5,5 +5,5 @@
 	path = libs/cglm
 	url = https://github.com/recp/cglm.git
 [submodule "libs/cimgui"]
-    path = libs/cimgui
-    url = https://github.com/cimgui/cimgui.git
+	path = libs/cimgui
+	url = https://github.com/cimgui/cimgui.git
