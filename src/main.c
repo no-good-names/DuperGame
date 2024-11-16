@@ -17,6 +17,17 @@
 #include <cimgui.h>
 #include "gfx/shader.h"
 #include "gfx/textures.h"
+#include "gfx/camera.h"
+
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+struct Camera camera;
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 void processInput(GLFWwindow *window) {
 	if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -25,10 +36,45 @@ void processInput(GLFWwindow *window) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	if(glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		processKeyboard(&camera, FORWARD, deltaTime);
+	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		processKeyboard(&camera, BACKWARD, deltaTime);
+	if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		processKeyboard(&camera, LEFT, deltaTime);
+	if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		processKeyboard(&camera, RIGHT, deltaTime);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
+}
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = xposIn;
+	float ypos = yposIn;
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+	lastX = xpos;
+	lastY = ypos;
+
+	processMouseMovement(&camera, xoffset, yoffset, true);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	processMouseScroll(&camera, yoffset);
 }
 
 char *getPath(const char *filename) {
@@ -63,6 +109,10 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		printf("Failed to initialize GLAD\n");
@@ -72,7 +122,7 @@ int main() {
 	fprintf(stderr, "OpenGL Version: %s\n", (char *) glGetString(GL_VERSION)); // Only for debugging
 	fprintf(stderr, "End ==========================\n");
 
-	Shader shader;
+	struct Shader shader;
 	shader.ID = createProgram(readShaderFile("../res/basic.vs"), readShaderFile("../res/basic.fs"));
 	const float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -180,20 +230,15 @@ int main() {
     }
     stbi_image_free(data);
     // texture 2
-    // ---------
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
-    // set the texture wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
     data = stbi_load("../res/awesomeface.png", &width, &height, &nrChannels, 0);
     if (data)
     {
-        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
@@ -203,30 +248,26 @@ int main() {
     }
     stbi_image_free(data);
 
-    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    // -------------------------------------------------------------------------------------------
     useShader(shader.ID);
     setInt(shader.ID, "texture1", 0);
     setInt(shader.ID, "texture2", 1);
 
-	vec3 cameraPos = {0.0f, 0.0f, 3.0f};
-	vec3 cameraFront = {0.0f, 0.0f, -1.0f};
-	vec3 cameraUp = {0.0f, 1.0f, 0.0f};
-	vec3 cameraTarget = {0.0f, 0.0f, 0.0f};
-	vec3 cameraDirection = {0.0f, 0.0f, 0.0f};
-	vec3 up = {0.0f, 1.0f, 0.0f};
-	vec3 cameraRight = {0.0f, 0.0f, 0.0f};
-
-	mat4 projection = GLM_MAT4_IDENTITY_INIT;
-	glm_perspective(glm_rad(60.0f), 800.0f / 600.0f, 0.1f, 100.0f, projection);
-	setMat4(shader.ID, "projection", projection);
 
 	// delta time
-	float deltaTime = 0.0f;
 	float lastFrame = 0.0f;
-	float currentFrame = 0.0f;
+
+	mat4 projection = GLM_MAT4_IDENTITY_INIT;
+	mat4 view = GLM_MAT4_IDENTITY_INIT;
+
+	vec3 cameraPos = {0.0f, 0.0f, 3.0f};
+	vec3 cameraUp = {0.0f, 1.0f, 0.0f};
+	initCamera(&camera, cameraPos, cameraUp, -90.0f, 0.0f);
 
 	while (!glfwWindowShouldClose(window)) {
+		const float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		processInput(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -238,20 +279,18 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		useShader(shader.ID);
+		glm_perspective(glm_rad(camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f, projection);
+		setMat4(shader.ID, "projection", projection);
 
-		mat4 view = GLM_MAT4_IDENTITY_INIT;
-		const float radius = 10.0f;
-		const float camX = sin(glfwGetTime()) * radius;
-		const float camZ = cos(glfwGetTime()) * radius;
-		glm_lookat((vec3){camX, 0.0f, camZ}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, view);
-
+		GetViewMatrix(camera, view);
 		setMat4(shader.ID, "view", view);
+
 		glBindVertexArray(VAO);
-		for(unsigned int i = 1; i < 11; i++) {
+		for(unsigned int i = 1; i < 10; i++) {
 			mat4 model = GLM_MAT4_IDENTITY_INIT;
-			glm_translate(model, cubePositions[i-1]);
+			glm_translate(model, cubePositions[i]);
 			const float angle = 20.0f * i;
-			glm_rotate(model, ((float) glfwGetTime() * i), (vec3){1.0f, 0.3f, 0.5f});
+			glm_rotate(model, glm_rad(angle), (vec3){1.0f, 0.3f, 0.5f});
 			setMat4(shader.ID, "model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -259,10 +298,7 @@ int main() {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		// per-frame time logic -- delta time calculation for constant speed
-		currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		processMouseMovement(&camera, 0, 0, true);
 	}
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);

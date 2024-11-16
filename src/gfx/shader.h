@@ -11,9 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
+struct Shader {
 	unsigned int ID;
-} Shader;
+};
 
 char* readShaderFile(const char* filename);
 

@@ -20,5 +20,7 @@ add_executable(DuperGame
         src/gfx/textures.c
         src/gfx/textures.h
         src/gfx/buffer.c
-        src/gfx/buffer.h)
+        src/gfx/buffer.h
+        src/gfx/camera.c
+        src/gfx/camera.h)
 target_link_libraries(DuperGame PRIVATE ${LIBS})
