@@ -22,7 +22,7 @@ enum Camera_Movement {
 #define SENSITIVITY 0.1f
 #define ZOOM 45.0f
 
-struct Camera {
+typedef struct Camera_t {
 	vec3 Position;
 	vec3 Front;
 	vec3 Up;
@@ -33,14 +33,14 @@ struct Camera {
 	float MovementSpeed;
 	float MouseSensitivity;
 	float Zoom;
-};
+} Camera;
 
-void initCamera(struct Camera *camera, vec3 position, vec3 up, float yaw, float pitch);
-void processKeyboard(struct Camera *camera, enum Camera_Movement direction, float deltaTime);
-void processMouseMovement(struct Camera *camera, float xoffset, float yoffset, GLboolean constrainPitch);
-void processMouseScroll(struct Camera *camera, float yoffset);
-void updateCameraVectors(struct Camera *camera);
-static void GetViewMatrix(struct Camera camera, mat4 view) {
+void initCamera(Camera *camera, vec3 position, vec3 up, float yaw, float pitch);
+void processKeyboard(Camera *camera, enum Camera_Movement direction, float deltaTime);
+void processMouseMovement(Camera *camera, float xoffset, float yoffset, GLboolean constrainPitch);
+void processMouseScroll(Camera *camera, float yoffset);
+void updateCameraVectors(Camera *camera);
+static void GetViewMatrix(Camera camera, mat4 view) {
 	glm_lookat(camera.Position, (vec3){camera.Position[0] + camera.Front[0],
 									   camera.Position[1] + camera.Front[1],
 									   camera.Position[2] + camera.Front[2]},

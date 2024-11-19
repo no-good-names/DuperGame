@@ -4,7 +4,7 @@
 
 #include "camera.h"
 
-void initCamera(struct Camera *camera, vec3 position, vec3 up, float yaw, float pitch) {
+void initCamera(Camera *camera, vec3 position, vec3 up, float yaw, float pitch) {
     glm_vec3_copy(position, camera->Position);
     glm_vec3_copy(up, camera->WorldUp);
     camera->Yaw = yaw;
@@ -17,7 +17,7 @@ void initCamera(struct Camera *camera, vec3 position, vec3 up, float yaw, float 
 }
 
 
-void processKeyboard(struct Camera *camera, enum Camera_Movement direction, float deltaTime) {
+void processKeyboard(Camera *camera, enum Camera_Movement direction, float deltaTime) {
 	vec3 velocity = {camera->MovementSpeed * deltaTime, camera->MovementSpeed * deltaTime, camera->MovementSpeed * deltaTime};
 	vec3 cameraFrontTmp;
 	if(direction == FORWARD) {
@@ -39,7 +39,7 @@ void processKeyboard(struct Camera *camera, enum Camera_Movement direction, floa
 		glm_vec3_add(camera->Position, cameraFrontTmp, camera->Position);
 	}
 }
-void processMouseMovement(struct Camera *camera, float xoffset, float yoffset, GLboolean constrainPitch) {
+void processMouseMovement(Camera *camera, float xoffset, float yoffset, GLboolean constrainPitch) {
 	xoffset *= camera->MouseSensitivity;
 	yoffset *= camera->MouseSensitivity;
 
@@ -55,13 +55,13 @@ void processMouseMovement(struct Camera *camera, float xoffset, float yoffset, G
 	updateCameraVectors(camera);
 }
 
-void processMouseScroll(struct Camera *camera, float yoffset) {
+void processMouseScroll(Camera *camera, float yoffset) {
 	camera->Zoom -= yoffset;
 	if (camera->Zoom < 1.0f) camera->Zoom = 1.0f;
 	if (camera->Zoom > 45.0f) camera->Zoom = 45.0f;
 }
 
-void updateCameraVectors(struct Camera *camera) {
+void updateCameraVectors(Camera *camera) {
 	vec3 front;
 	front[0] = cosf(glm_rad(camera->Yaw)) * cosf(glm_rad(camera->Pitch));
 	front[1] = sinf(glm_rad(camera->Pitch));

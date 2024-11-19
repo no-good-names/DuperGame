@@ -21,13 +21,13 @@ enum TextureWarning {
 	TEXTURE_WARNING_FILE_OVERSIZED = 3 // File is too large to be loaded or might cause performance issues
 };
 
-typedef struct {
+typedef struct Texture_t {
 	unsigned int ID;
-	unsigned char *data;
-	int width, height, nrChannels;
+    char *name;
 } Texture;
 
-enum TextureError loadTextureFromFile(const char *path, Texture *texture);
-void loadTexture(const char *path, Texture texture);
+Texture loadTexture(const char *filename);
+void freeTexture(unsigned int ID);
+void useTexture(unsigned int ID);
 
 #endif //TEXTURES_H

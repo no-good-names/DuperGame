@@ -2,7 +2,6 @@
 // Created by no-good-names on 11/2/2024.
 //
 
-#define STB_IMAGE_IMPLEMENTATION
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +9,6 @@
 #include <stdbool.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <stb_image.h>
 #include <unistd.h>
 #include <limits.h>
 #include <cglm/cglm.h>
@@ -24,7 +22,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // global variables
-struct Camera camera;
+Camera camera;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -89,8 +87,6 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     }
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	processMouseScroll(&camera, yoffset);
@@ -141,7 +137,7 @@ int main() {
 	fprintf(stderr, "OpenGL Version: %s\n", (char *) glGetString(GL_VERSION)); // Only for debugging
 	fprintf(stderr, "End ==========================\n");
 
-	struct Shader shader;
+	Shader shader;
 	shader.ID = createProgram(readShaderFile("../res/basic.vs"), readShaderFile("../res/basic.fs"));
 	const float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -223,49 +219,8 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	unsigned int texture1, texture2;
-    // texture 1
-    // ---------
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load("../res/container.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        fprintf(stderr, "Failed to load texture\n");
-    }
-    stbi_image_free(data);
-    // texture 2
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    data = stbi_load("../res/awesomeface.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        fprintf(stderr, "Failed to load texture\n");
-    }
-    stbi_image_free(data);
+    Texture texture1 = loadTexture("../res/container.jpg");
+    Texture texture2 = loadTexture("../res/awesomeface.png");
 
     useShader(shader.ID);
     setInt(shader.ID, "texture1", 0);
@@ -293,9 +248,9 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
+		glBindTexture(GL_TEXTURE_2D, texture1.ID);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		glBindTexture(GL_TEXTURE_2D, texture2.ID);
 
 		useShader(shader.ID);
 		glm_perspective(glm_rad(camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f, projection);
@@ -324,6 +279,9 @@ int main() {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
 	}
+    glDeleteProgram(shader.ID);
+    glDeleteTextures(1, &texture1.ID);
+    glDeleteTextures(1, &texture2.ID);
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
