@@ -24,3 +24,14 @@ add_executable(DuperGame
         src/gfx/camera.c
         src/gfx/camera.h)
 target_link_libraries(DuperGame PRIVATE ${LIBS})
+
+add_custom_command(TARGET DuperGame POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:DuperGame>/res)
+
+add_custom_target(run
+        COMMAND DuperGame
+        DEPENDS DuperGame
+        WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+        COMMENT "Running DuperGame")
+

@@ -19,18 +19,32 @@
 #include "gfx/textures.h"
 #include "gfx/camera.h"
 
+// consts
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+// global variables
 struct Camera camera;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+bool mouseEnabled = true;
+
+// adds constant delay between key presses
+bool wait(float seconds) {
+    static float lastTime = 0;
+    float currentTime = glfwGetTime();
+    if(currentTime - lastTime > seconds) {
+        lastTime = currentTime;
+        return true;
+    }
+    return false;
+}
 
 void processInput(GLFWwindow *window) {
-	if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if(glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if(glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -44,6 +58,9 @@ void processInput(GLFWwindow *window) {
 		processKeyboard(&camera, LEFT, deltaTime);
 	if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		processKeyboard(&camera, RIGHT, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && wait(0.5f) == true) {
+        mouseEnabled = !mouseEnabled;
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -67,7 +84,9 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 	lastX = xpos;
 	lastY = ypos;
 
-	processMouseMovement(&camera, xoffset, yoffset, true);
+    if(mouseEnabled) {
+        processMouseMovement(&camera, xoffset, yoffset, false);
+    }
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
@@ -299,6 +318,11 @@ int main() {
 		glfwPollEvents();
 
 		processMouseMovement(&camera, 0, 0, true);
+        if(mouseEnabled) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        } else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
 	}
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
