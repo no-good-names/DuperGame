@@ -17,6 +17,11 @@ typedef struct Shader_t {
 
 char* readShaderFile(const char* filename);
 
+#ifdef SHADER_DEBUG
+void compile_error(const unsigned int source);
+void link_err(const unsigned int source);
+#endif
+
 unsigned int createProgram(const char *vss, const char *fss);
 void useShader(unsigned int ID);
 void setBool(unsigned int ID, const char* name, int value);
