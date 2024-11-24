@@ -16,6 +16,9 @@ CMAKE = "cmake"
 MAKE = "make"
 CMAKE_BUILD_TYPE = "Release"
 
+def tool_exists(tool):
+    return shutil.which(tool) is not None
+
 # Functions
 def clean():
     if os.path.exists(BUILD_DIR):
@@ -32,6 +35,11 @@ def build(run=False):
         subprocess.run([MAKE])
 
 def main():
+    tools = [CMAKE, MAKE]
+    for tool in tools:
+        if not tool_exists(tool):
+            print("Error: " + tool + " not found!")
+            sys.exit(1)
     if not os.path.exists("./CMakeLists.txt"):
         print("You're in the wrong dir! Please build in the project dir.")
         sys.exit(1)
@@ -46,7 +54,7 @@ def main():
     elif sys.argv[1] == "run":
         build(True)
     else:
-        print("Usage: python build.py [clean|build]")
+        print("Usage: python build.py [clean|build|run]")
         sys.exit(1)
 
 

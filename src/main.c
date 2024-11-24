@@ -14,14 +14,7 @@
 #include "gfx/shader.h"
 #include "gfx/textures.h"
 #include "gfx/camera.h"
-
-#ifdef IMGUI_HAS_IMSTR
-#define igBegin igBegin_Str
-#define igSliderFloat igSliderFloat_Str
-#define igCheckbox igCheckbox_Str
-#define igColorEdit3 igColorEdit3_Str
-#define igButton igButton_Str
-#endif
+#include "gfx/gui.h"
 
 
 // consts
@@ -121,7 +114,11 @@ int main() {
 
 	#ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	const char *glsl_version = "#version 150";
+	#else
+	const char *glsl_version = "#version 130";
 	#endif
+
 
 	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
 	if (window == NULL) {
@@ -140,7 +137,6 @@ int main() {
 		printf("Failed to initialize GLAD\n");
 		return -1;
 	}
-	glEnable(GL_DEPTH_TEST);
 	fprintf(stderr, "OpenGL Version: %s\n", (char *) glGetString(GL_VERSION)); // Only for debugging
 	fprintf(stderr, "End ==========================\n");
 
@@ -233,7 +229,6 @@ int main() {
     setInt(shader.ID, "texture1", 0);
     setInt(shader.ID, "texture2", 1);
 
-
 	// delta time
 	float lastFrame = 0.0f;
 
@@ -243,6 +238,9 @@ int main() {
 	vec3 cameraPos = {0.0f, 0.0f, 3.0f};
 	vec3 cameraUp = {0.0f, 1.0f, 0.0f};
 	initCamera(&camera, cameraPos, cameraUp, -90.0f, 0.0f);
+	glEnable(GL_DEPTH_TEST);
+
+	initGUI(window, glsl_version);
 
 	while (!glfwWindowShouldClose(window)) {
 		const float currentFrame = glfwGetTime();
@@ -250,6 +248,8 @@ int main() {
 		lastFrame = currentFrame;
 
 		processInput(window);
+
+		renderGUI();
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -279,12 +279,13 @@ int main() {
 		glfwPollEvents();
 
 		processMouseMovement(&camera, 0, 0, true);
-        if(mouseEnabled) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        } else {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        }
+		if(mouseEnabled) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		} else {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
 	}
+	freeGUI();
     glDeleteProgram(shader.ID);
     glDeleteTextures(1, &texture1.ID);
     glDeleteTextures(1, &texture2.ID);
