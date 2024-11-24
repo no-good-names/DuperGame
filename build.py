@@ -1,4 +1,8 @@
 # build.py - Build script for the project
+# Usage: python build.py [clean|build|run]
+
+# NOTE: This script is only for Linux and MacOS. For Windows, you can use the build.bat file.
+# NOTE: If you're using Clion, you can use the CMakeLists.txt file to build the project.
 
 import os
 import sys

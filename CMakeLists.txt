@@ -9,7 +9,17 @@ add_subdirectory(libs/glfw EXCLUDE_FROM_ALL)
 add_subdirectory(libs/cglm EXCLUDE_FROM_ALL)
 add_subdirectory(libs/cimgui EXCLUDE_FROM_ALL)
 
-include_directories(./libs/glad/include ./libs/stb/ ./libs/glfw/include ./libs/cglm/include ./libs/cimgui/)
+include_directories(./libs/glad/include ./libs/stb)
+
+option(TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" ON) # Default to ON for safer code
+if (TREAT_WARNINGS_AS_ERRORS)
+    if (MSVC)
+        add_compile_options(/WX)
+    else()
+        add_compile_options(-Werror)
+    endif()
+endif()
+
 
 set(LIBS glad glfw cglm cimgui m)
 
@@ -19,10 +29,12 @@ add_executable(DuperGame
         src/gfx/shader.h
         src/gfx/textures.c
         src/gfx/textures.h
-        src/gfx/buffer.c
-        src/gfx/buffer.h
         src/gfx/camera.c
-        src/gfx/camera.h)
+        src/gfx/camera.h
+        src/gfx/gui.c
+        src/gfx/gui.h)
+
+target_compile_definitions(cimgui PRIVATE CIMGUI_USE_GLFW CIMGUI_USE_OPENGL3)
 target_link_libraries(DuperGame PRIVATE ${LIBS})
 
 add_custom_command(TARGET DuperGame POST_BUILD
@@ -34,4 +46,3 @@ add_custom_target(run
         DEPENDS DuperGame
         WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
         COMMENT "Running DuperGame")
-

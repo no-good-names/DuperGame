@@ -47,4 +47,22 @@ static void GetViewMatrix(Camera camera, mat4 view) {
 			   camera.Up, view);
 }
 
+#ifdef CAMERA_DEBUG
+// Only to debug the camera
+// TODO: Make it log to a file
+// NOTE: Don't keep this
+void printCamera(Camera camera) {
+	printf("Camera Position: %f, %f, %f\n", camera.Position[0], camera.Position[1], camera.Position[2]);
+	printf("Camera Front: %f, %f, %f\n", camera.Front[0], camera.Front[1], camera.Front[2]);
+	printf("Camera Up: %f, %f, %f\n", camera.Up[0], camera.Up[1], camera.Up[2]);
+	printf("Camera Right: %f, %f, %f\n", camera.Right[0], camera.Right[1], camera.Right[2]);
+	printf("Camera WorldUp: %f, %f, %f\n", camera.WorldUp[0], camera.WorldUp[1], camera.WorldUp[2]);
+	printf("Camera Yaw: %f\n", camera.Yaw);
+	printf("Camera Pitch: %f\n", camera.Pitch);
+	printf("Camera MovementSpeed: %f\n", camera.MovementSpeed);
+	printf("Camera MouseSensitivity: %f\n", camera.MouseSensitivity);
+	printf("Camera Zoom: %f\n", camera.Zoom);
+}
+#endif
+
 #endif //CAMERA_H

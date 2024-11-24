@@ -50,8 +50,7 @@ char* readShaderFile(const char* filename) {
 void compile_error(const unsigned int source) {
 	int status;
 	glGetShaderiv(source, GL_COMPILE_STATUS, &status);
-if(!status)
-	{
+	if(!status) {
 		char log[512];
 		glGetShaderInfoLog(source, 512, NULL, log);
 		fprintf(stderr, "ERROR::SHADER::VERTEX/FRAGMENT::COMPILATION_FAILED\n");
