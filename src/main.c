@@ -10,10 +10,6 @@
 #include <GLFW/glfw3.h>
 #include <unistd.h>
 #include <cglm/cglm.h>
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include <cimgui.h>
-#include "util/imgui_impl_glfw.h"
-#include "util/imgui_impl_opengl3.h"
 
 #include "gfx/shader.h"
 #include "gfx/textures.h"
@@ -248,85 +244,12 @@ int main() {
 	vec3 cameraUp = {0.0f, 1.0f, 0.0f};
 	initCamera(&camera, cameraPos, cameraUp, -90.0f, 0.0f);
 
-
-	igCreateContext(NULL);
-
-	// set docking
-	ImGuiIO *ioptr = igGetIO();
-	ioptr->ConfigFlags |= 1;   // Enable Keyboard Controls
-	//ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-	#ifdef IMGUI_HAS_DOCK
-	ioptr->ConfigFlags |= 1;       // Enable Docking
-	ioptr->ConfigFlags |= 1;     // Enable Multi-Viewport / Platform Windows
-	#endif
-
-	igStyleColorsDark(NULL);
-	// ImFontAtlas_AddFontDefault(io.Fonts, NULL);
-
-	bool showDemoWindow = true;
-	bool showAnotherWindow = false;
-	ImVec4 clearColor;
-	clearColor.x = 0.45f;
-	clearColor.y = 0.55f;
-	clearColor.z = 0.60f;
-	clearColor.w = 1.00f;
-
 	while (!glfwWindowShouldClose(window)) {
 		const float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
 		processInput(window);
-
-		// start imgui frame
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		igNewFrame();
-
-		if (showDemoWindow)
-			igShowDemoWindow(&showDemoWindow);
-
-		// show a simple window that we created ourselves.
-		{
-			static float f = 0.0f;
-			static int counter = 0;
-
-			igBegin("Hello, world!", NULL, 0);
-			igText("This is some useful text");
-			igCheckbox("Demo window", &showDemoWindow);
-			igCheckbox("Another window", &showAnotherWindow);
-
-			igSliderFloat("Float", &f, 0.0f, 1.0f, "%.3f", 0);
-			igColorEdit3("clear color", (float *)&clearColor, 0);
-
-			ImVec2 buttonSize;
-			buttonSize.x = 0;
-			buttonSize.y = 0;
-			if (igButton("Button", buttonSize))
-				counter++;
-			igSameLine(0.0f, -1.0f);
-			igText("counter = %d", counter);
-
-			igText("Application average %.3f ms/frame (%.1f FPS)",
-				   1000.0f / igGetIO()->Framerate, igGetIO()->Framerate);
-			igEnd();
-		}
-
-		if (showAnotherWindow)
-		{
-			igBegin("imgui Another Window", &showAnotherWindow, 0);
-			igText("Hello from imgui");
-			ImVec2 buttonSize;
-			buttonSize.x = 0;
-			buttonSize.y = 0;
-			if (igButton("Close me", buttonSize)) {
-				showAnotherWindow = false;
-			}
-			igEnd();
-		}
-
-		// render
-		igRender();
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

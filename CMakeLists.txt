@@ -7,7 +7,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(libs/glad EXCLUDE_FROM_ALL)
 add_subdirectory(libs/glfw EXCLUDE_FROM_ALL)
 add_subdirectory(libs/cglm EXCLUDE_FROM_ALL)
-add_subdirectory(libs/cimgui EXCLUDE_FROM_ALL)
 
 include_directories(./libs/glad/include ./libs/stb)
 
@@ -21,7 +20,7 @@ if (TREAT_WARNINGS_AS_ERRORS)
 endif()
 
 
-set(LIBS glad glfw cglm cimgui m)
+set(LIBS glad glfw cglm m)
 
 add_executable(DuperGame
         src/main.c
@@ -34,7 +33,6 @@ add_executable(DuperGame
         src/gfx/gui.c
         src/gfx/gui.h)
 
-target_compile_definitions(cimgui PRIVATE CIMGUI_USE_GLFW CIMGUI_USE_OPENGL3)
 target_link_libraries(DuperGame PRIVATE ${LIBS})
 
 add_custom_command(TARGET DuperGame POST_BUILD
