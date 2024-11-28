@@ -12,11 +12,6 @@
 #include <cglm/cglm.h>
 #include <limits.h>
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-
-#include "cimgui.h"
-#include "cimgui_impl.h"
-
 #include "gfx/shader.h"
 #include "gfx/textures.h"
 #include "gfx/camera.h"
@@ -153,7 +148,7 @@ int main() {
 	fprintf(stderr, "End =========================================================================\n");
 
 	Shader shader;
-	shader.ID = createProgram(readShaderFile("../res/basic.vs"), readShaderFile("../res/basic.fs"));
+	shader.ID = createProgram(readShaderFile("res/basic.vs"), readShaderFile("res/basic.fs"));
 	const float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,

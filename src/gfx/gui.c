@@ -6,11 +6,8 @@
 // DEPENDENCIES: glfw, glad, cimgui
 // TODO: Implement GUI functions
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include <cimgui.h>
-#include <cimgui_impl.h>
-
 #include "gui.h"
+
 void guiInit(GLFWwindow* window, GUIState *state) {
 #ifdef __APPLE__
 	const char *glsl_version = "#version 150";
