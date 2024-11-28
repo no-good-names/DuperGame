@@ -7,3 +7,9 @@
 [submodule "libs/cimgui"]
 	path = libs/cimgui
 	url = https://github.com/cimgui/cimgui.git
+[submodule "libs/cr"]
+	path = libs/cr
+	url = https://github.com/fungos/cr.git
+[submodule "libs/assimp"]
+	path = libs/assimp
+	url = https://github.com/assimp/assimp.git

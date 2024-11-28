@@ -10,12 +10,17 @@
 #include <GLFW/glfw3.h>
 #include <unistd.h>
 #include <cglm/cglm.h>
+#include <limits.h>
+
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+
+#include "cimgui.h"
+#include "cimgui_impl.h"
 
 #include "gfx/shader.h"
 #include "gfx/textures.h"
 #include "gfx/camera.h"
 #include "gfx/gui.h"
-
 
 // consts
 const unsigned int SCR_WIDTH = 800;
@@ -92,6 +97,10 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	processMouseScroll(&camera, yoffset);
 }
 
+void glfw_error_callback(int error, const char* description) {
+	fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
+
 char *getPath(const char *filename) {
 	char cwd[PATH_MAX];
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {
@@ -127,6 +136,7 @@ int main() {
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+	glfwSetErrorCallback(glfw_error_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
@@ -138,7 +148,9 @@ int main() {
 		return -1;
 	}
 	fprintf(stderr, "OpenGL Version: %s\n", (char *) glGetString(GL_VERSION)); // Only for debugging
-	fprintf(stderr, "End ==========================\n");
+	fprintf(stderr, "GLSL Version: %s\n", (char *) glGetString(GL_SHADING_LANGUAGE_VERSION)); // Only for debugging
+	fprintf(stderr, "GLFW Version: %s\n", glfwGetVersionString()); // Only for debugging
+	fprintf(stderr, "End =========================================================================\n");
 
 	Shader shader;
 	shader.ID = createProgram(readShaderFile("../res/basic.vs"), readShaderFile("../res/basic.fs"));
@@ -222,8 +234,8 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-    Texture texture1 = loadTexture("../res/container.jpg");
-    Texture texture2 = loadTexture("../res/awesomeface.png");
+    Texture texture1 = loadTexture("res/container.jpg");
+    Texture texture2 = loadTexture("res/awesomeface.png");
 
     useShader(shader.ID);
     setInt(shader.ID, "texture1", 0);
@@ -240,7 +252,10 @@ int main() {
 	initCamera(&camera, cameraPos, cameraUp, -90.0f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 
-	initGUI(window, glsl_version);
+	GUIState state;
+	state.state = DEMO_TEST_SHOW_ANOTHER_WINDOW;
+	state.show = true;
+	guiInit(window, &state);
 
 	while (!glfwWindowShouldClose(window)) {
 		const float currentFrame = glfwGetTime();
@@ -249,7 +264,11 @@ int main() {
 
 		processInput(window);
 
-		renderGUI();
+		guiUpdate(&state);
+
+		// render
+		igRender();
+		glfwMakeContextCurrent(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -275,6 +294,9 @@ int main() {
 			setMat4(shader.ID, "model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		guiRender(&state);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
@@ -285,7 +307,8 @@ int main() {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 	}
-	freeGUI();
+	guiDestroy();
+
     glDeleteProgram(shader.ID);
     glDeleteTextures(1, &texture1.ID);
     glDeleteTextures(1, &texture2.ID);

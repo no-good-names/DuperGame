@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
 project(DuperGame)
-cmake_policy(SET CMP0091 NEW)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
@@ -29,13 +28,13 @@ set (CMAKE_CXX_STANDARD 11)
 
 # general settings
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/backends)
-set(BAKENDS_FOLDER "./libs/cimgui/imgui/backends/")
+set(BAKENDS_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/backends/")
 else()
-set(BAKENDS_FOLDER "./libs/cimgui/imgui/examples/")
+set(BAKENDS_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/examples/")
 endif()
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/imgui_tables.cpp)
-set(TABLES_SOURCE "./libs/cimgui/imgui/imgui_tables.cpp")
+set(TABLES_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/imgui_tables.cpp")
 else()
 set(TABLES_SOURCE "")
 endif()
@@ -46,18 +45,17 @@ add_definitions("-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS=1")
 
 include_directories(./libs/cimgui)
 set(IMGUI_SOURCES
-        ./libs/cimgui/cimgui.cpp
-        ./libs/cimgui/imgui/imgui.cpp
-        ./libs/cimgui/imgui/imgui_draw.cpp
-        ./libs/cimgui/imgui/imgui_demo.cpp
-        ./libs/cimgui/imgui/imgui_widgets.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/cimgui.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/imgui.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/imgui_draw.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/imgui_demo.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/cimgui/imgui/imgui_widgets.cpp
         ${TABLES_SOURCE}
 )
 
 set(IMGUI_LIBRARIES )
 
-
-add_compile_definitions("IMGUI_IMPL_OPENGL_LOADER_GL3W")
+add_compile_definitions("IMGUI_IMPL_OPENGL_LOADER_GLAD")
 
 # optional adding freetype
 option(IMGUI_FREETYPE "add Freetype2" OFF)
@@ -65,13 +63,13 @@ option(IMGUI_FREETYPE "add Freetype2" OFF)
 if(IMGUI_FREETYPE)
 FIND_PACKAGE(freetype REQUIRED PATHS ${FREETYPE_PATH})
 list(APPEND IMGUI_LIBRARIES freetype)
-list(APPEND IMGUI_SOURCES cimgui/imgui/misc/freetype/imgui_freetype.cpp)
+list(APPEND IMGUI_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cimgui/imgui/misc/freetype/imgui_freetype.cpp)
 add_definitions("-DCIMGUI_FREETYPE=1")
 endif(IMGUI_FREETYPE)
 
 # opengl3
 list(APPEND IMGUI_SOURCES ${BAKENDS_FOLDER}imgui_impl_opengl3.cpp)
-include_directories(libs/cimgui/imgui/examples/libs/gl3w)
+
 if(WIN32)
 list(APPEND IMGUI_LIBRARIES opengl32)
 else(WIN32) # Unix
@@ -79,18 +77,9 @@ list(APPEND IMGUI_LIBRARIES GL)
 endif(WIN32)
 
 # GLFW
-list(APPEND IMGUI_SOURCES ${BAKENDS_FOLDER}imgui_impl_glfw.cpp)
+list(APPEND IMGUI_SOURCES ${BAKENDS_FOLDER}/imgui_impl_glfw.cpp)
 
-#if dynamic glfw then install
-install(TARGETS glfw RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-LIBRARY DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-if (NOT STATIC_BUILD)
-add_library(cimgui SHARED ${IMGUI_SOURCES})
-else()
 add_library(cimgui STATIC ${IMGUI_SOURCES})
-endif()
 
 if (WIN32)
 target_compile_definitions(cimgui PUBLIC "-DIMGUI_IMPL_API=extern \"C\" __declspec\(dllexport\)")
@@ -101,7 +90,7 @@ endif(WIN32)
 target_link_libraries(cimgui ${IMGUI_LIBRARIES} glfw)
 
 # using library
-include_directories(../../generator/output/)
+include_directories(./libs/cimgui/generator/output/)
 # CIMMGUI END ==========================================================================================================
 
 option(TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" ON) # Default to ON for safer code
@@ -127,6 +116,7 @@ add_executable(DuperGame
         src/gfx/camera.h
         src/gfx/gui.c
         src/gfx/gui.h)
+
 target_compile_definitions(cimgui PUBLIC -DCIMGUI_USE_OPENGL3 -DCIMGUI_USE_GLFW)
 target_link_libraries(DuperGame PRIVATE ${LIBS})
 
