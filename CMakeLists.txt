@@ -5,10 +5,20 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unknown-pragmas")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
 
+set(CMAKE_PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+# GLAD should always be able to be built
 add_subdirectory(libs/glad EXCLUDE_FROM_ALL)
 add_subdirectory(libs/glfw EXCLUDE_FROM_ALL)
 add_subdirectory(libs/cglm EXCLUDE_FROM_ALL)
+
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests")
+set(ASSIMP_NO_EXPORT ON CACHE BOOL "Disable Assimp exporters") # If you only need import functionality
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Build Assimp as a static library")
+add_subdirectory(libs/assimp EXCLUDE_FROM_ALL)
 
 include_directories(
         ./libs/glad/include
@@ -93,7 +103,12 @@ target_link_libraries(cimgui ${IMGUI_LIBRARIES} glfw)
 include_directories(./libs/cimgui/generator/output/)
 # CIMMGUI END ==========================================================================================================
 
-option(TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" ON) # Default to ON for safer code
+if ( MSVC )
+    target_compile_definitions(assimp -D_SCL_SECURE_NO_WARNINGS )
+    target_compile_definitions(assimp -D_CRT_SECURE_NO_WARNINGS )
+endif ( MSVC )
+
+option(TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF) # Default to ON for safer code
 if (TREAT_WARNINGS_AS_ERRORS)
     if (MSVC)
         add_compile_options(/WX)
@@ -102,8 +117,7 @@ if (TREAT_WARNINGS_AS_ERRORS)
     endif()
 endif()
 
-
-set(LIBS glad glfw cglm cimgui m)
+set(LIBS glad glfw cglm cimgui assimp m)
 
 include_directories(./libs/cimgui/generator/output)
 add_executable(DuperGame
@@ -115,7 +129,10 @@ add_executable(DuperGame
         src/gfx/camera.c
         src/gfx/camera.h
         src/gfx/gui.c
-        src/gfx/gui.h)
+        src/gfx/gui.h
+        src/gfx/mesh.c
+        src/gfx/mesh.h
+)
 
 target_compile_definitions(cimgui PUBLIC -DCIMGUI_USE_OPENGL3 -DCIMGUI_USE_GLFW)
 target_link_libraries(DuperGame PRIVATE ${LIBS})
