@@ -79,6 +79,7 @@ void guiUpdate(GUIState *state) {
 		}
 		igEnd();
 	}
+	igRender();
 }
 
 void guiRender(GUIState *state) {

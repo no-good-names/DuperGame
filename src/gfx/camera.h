@@ -12,7 +12,9 @@ enum Camera_Movement {
 	FORWARD,
 	BACKWARD,
 	LEFT,
-	RIGHT
+	RIGHT,
+	UP,
+	DOWN,
 };
 
 // Default camera values
@@ -42,9 +44,7 @@ void processMouseScroll(Camera *camera, float yoffset);
 void updateCameraVectors(Camera *camera);
 static void GetViewMatrix(Camera camera, mat4 view) {
 	glm_lookat(camera.Position, (vec3){camera.Position[0] + camera.Front[0],
-									   camera.Position[1] + camera.Front[1],
-									   camera.Position[2] + camera.Front[2]},
-			   camera.Up, view);
+		camera.Position[1] + camera.Front[1], camera.Position[2] + camera.Front[2]}, camera.Up, view);
 }
 
 #ifdef CAMERA_DEBUG

@@ -262,7 +262,6 @@ int main() {
 		guiUpdate(&state);
 
 		// render
-		igRender();
 		glfwMakeContextCurrent(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);

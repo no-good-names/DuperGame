@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.30)
 project(DuperGame)
 
 set(CMAKE_C_STANDARD 11)
@@ -130,8 +130,6 @@ add_executable(DuperGame
         src/gfx/camera.h
         src/gfx/gui.c
         src/gfx/gui.h
-        src/gfx/mesh.c
-        src/gfx/mesh.h
 )
 
 target_compile_definitions(cimgui PUBLIC -DCIMGUI_USE_OPENGL3 -DCIMGUI_USE_GLFW)
