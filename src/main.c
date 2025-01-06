@@ -31,7 +31,7 @@ float lastFrame = 0.0f;
 bool mouseEnabled = true;
 
 // adds constant delay between key presses
-bool wait(float seconds) {
+bool keywait(float seconds) {
     static float lastTime = 0;
     float currentTime = glfwGetTime();
     if(currentTime - lastTime > seconds) {
@@ -56,7 +56,7 @@ void processInput(GLFWwindow *window) {
 		processKeyboard(&camera, LEFT, deltaTime);
 	if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		processKeyboard(&camera, RIGHT, deltaTime);
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && wait(0.5f) == true) {
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && keywait(0.5f) == true) {
         mouseEnabled = !mouseEnabled;
     }
 }
