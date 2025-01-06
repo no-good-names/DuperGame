@@ -82,9 +82,11 @@ list(APPEND IMGUI_SOURCES ${BAKENDS_FOLDER}imgui_impl_opengl3.cpp)
 
 if(WIN32)
 list(APPEND IMGUI_LIBRARIES opengl32)
-else(WIN32) # Unix
+elif(UNIX AND NOT APPLE)
 list(APPEND IMGUI_LIBRARIES GL)
-endif(WIN32)
+elseif(APPLE)
+list(APPEND IMGUI_LIBRARIES "-framework OpenGL")
+endif()
 
 # GLFW
 list(APPEND IMGUI_SOURCES ${BAKENDS_FOLDER}/imgui_impl_glfw.cpp)
