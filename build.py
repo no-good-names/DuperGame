@@ -16,7 +16,7 @@ CMAKE = "cmake"
 MAKE = "make"
 CMAKE_BUILD_TYPE = "Release"
 
-def tool_exists(tool):
+def tool_exists(tool=""):
     return shutil.which(tool) is not None
 
 # Functions
@@ -27,7 +27,11 @@ def clean():
 def build(run=False):
     if not os.path.exists(BUILD_DIR):
         os.mkdir(BUILD_DIR)
-    subprocess.run([CMAKE,  "-S", ".", "-DCMAKE_BUILD_TYPE=" + CMAKE_BUILD_TYPE, "-B", BUILD_DIR])
+    ninja = "Ninja"
+    if tool_exists(ninja):
+        subprocess.run([CMAKE, "-S", ".", "-DCMAKE_BUILD_TYPE=" + CMAKE_BUILD_TYPE, "-B", BUILD_DIR, "-G", ninja,])
+    else:
+        subprocess.run([CMAKE, "-S", ".", "-DCMAKE_BUILD_TYPE=" + CMAKE_BUILD_TYPE, "-B", BUILD_DIR])
     os.chdir(BUILD_DIR)
     if run: # run the program
         subprocess.run([MAKE, "run"])
@@ -60,4 +64,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
